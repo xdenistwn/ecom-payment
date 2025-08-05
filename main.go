@@ -8,6 +8,7 @@ import (
 	"payment/cmd/payment/service"
 	"payment/cmd/payment/usecase"
 	"payment/config"
+	"payment/grpc"
 	"payment/infrastructure/constant"
 	"payment/infrastructure/log"
 	"payment/kafka"
@@ -27,6 +28,9 @@ func main() {
 	// setup logger
 	log.SetupLogger()
 
+	// grpc user client
+	grpcUserClient := grpc.NewUserClient()
+
 	// payment service
 	databaseRepository := repository.NewPaymentDatabase(db)
 	publisherRepository := repository.NewKafkaPublisher(kafkaWriter)
@@ -36,7 +40,7 @@ func main() {
 
 	// xendit service
 	xenditRepository := repository.NewXenditClient(cfg.Xendit.SecretApiKey)
-	xenditService := service.NewXenditService(databaseRepository, xenditRepository)
+	xenditService := service.NewXenditService(databaseRepository, xenditRepository, *grpcUserClient)
 	xenditUsacase := usecase.NewXenditUsecase(xenditService)
 
 	// scheduler service
