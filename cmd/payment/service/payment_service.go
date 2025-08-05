@@ -17,6 +17,9 @@ const (
 	RetryDelay           = 2 // seconds
 )
 
+// mockgen
+// mockgen -source=cmd/payment/service/payment_service.go -destination=cmd/test_mock/service/payment_service_mock.go -package=mocks
+
 type PaymentService interface {
 	ProcessPaymentSuccess(ctx context.Context, orderID int64) error
 	CheckPaymentAmountByOrderID(ctx context.Context, orderID int64) (float64, error)
