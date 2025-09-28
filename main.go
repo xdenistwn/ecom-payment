@@ -40,7 +40,7 @@ func main() {
 
 	// xendit service
 	xenditRepository := repository.NewXenditClient(cfg.Xendit.SecretApiKey)
-	xenditService := service.NewXenditService(databaseRepository, xenditRepository, *grpcUserClient)
+	xenditService := service.NewXenditService(databaseRepository, xenditRepository, grpcUserClient)
 	xenditUsacase := usecase.NewXenditUsecase(xenditService)
 
 	// scheduler service

@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	mocks "payment/cmd/test_mock/repository"
-	mocksRepository "payment/cmd/test_mock/repository"
+	mocks "payment/cmd/test_mock"
+	mocksRepository "payment/cmd/test_mock"
 	"payment/infrastructure/log"
 	"testing"
 
