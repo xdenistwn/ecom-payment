@@ -35,6 +35,22 @@ func (s *SchedulerService) StartProcessExpiredPendingPayments() {
 			}
 
 			for _, expiredPayment := range expiredPayments {
+				// check payment status first before update
+				paymentInfo, err := s.Database.GetPaymentInfoByOrderID(ctx, expiredPayment.OrderID)
+				if err != nil {
+					log.Logger.Printf("[payment ID: %d] s.Database.GetPaymentInfoByOrderID() got error: %v", expiredPayment.ID, err)
+				}
+
+				// Status: Expired, Success, Failed --> ignore
+				if paymentInfo.Status != "PENDING" {
+					continue
+				}
+
+				// publish event payment failed
+				err = retryPublishPayment(MaxTryPublishPayment, func() error {
+					return s.Publisher.PublishEventPaymentStatus(ctx, expiredPayment.OrderID, "FAILED", "payment.failed")
+				})
+
 				err = s.Database.MarkExpired(ctx, expiredPayment.OrderID)
 				if err != nil {
 					log.Logger.Printf("[payment ID: %d] s.Database.MarkExpired() got error: %v", expiredPayment.ID, err)

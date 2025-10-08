@@ -25,3 +25,8 @@ type PaymentRequests struct {
 	CreateTime time.Time `json:"create_time"`
 	UpdateTime time.Time `json:"update_time"`
 }
+
+type PaymentStatusUpdateEvent struct {
+	OrderID int64  `json:"order_id"`
+	Status  string `json:"status"`
+}

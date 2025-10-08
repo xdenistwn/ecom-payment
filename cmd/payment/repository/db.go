@@ -12,6 +12,7 @@ import (
 
 type PaymentDatabase interface {
 	MarkPaid(ctx context.Context, orderID int64) error
+	MarkFailed(ctx context.Context, orderID int64) error
 	MarkExpired(ctx context.Context, paymentID int64) error
 	SavePayment(ctx context.Context, param models.Payment) error
 	IsAlreadyPaid(ctx context.Context, orderID int64) (bool, error)
@@ -281,6 +282,23 @@ func (r *paymentDatabase) InsertAuditLog(ctx context.Context, param models.Payme
 		log.Logger.WithFields(logrus.Fields{
 			"param": param,
 		}).Errorf("InsertAuditLog => r.DB.Create() got error: %v", err)
+
+		return err
+	}
+
+	return nil
+}
+
+func (r *paymentDatabase) MarkFailed(ctx context.Context, orderID int64) error {
+	err := r.DB.Model(&models.Payment{}).Table("payments").WithContext(ctx).Where("order_id = ?", orderID).Updates(map[string]interface{}{
+		"status":      "FAILED",
+		"update_time": time.Now(),
+	}).Error
+
+	if err != nil {
+		log.Logger.WithFields(logrus.Fields{
+			"order_id": orderID,
+		}).Errorf("MarkFailed => r.DB.Update() MarkFailed got error: %v", err)
 
 		return err
 	}

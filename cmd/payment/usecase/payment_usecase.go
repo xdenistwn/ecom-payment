@@ -134,6 +134,15 @@ func (uc *paymentUsecase) ProcessPaymentWebhook(ctx context.Context, payload mod
 			return err
 		}
 	case "FAILED":
+		err := uc.Service.ProcessPaymentFailed(ctx, extractExternalIDToOrderId(payload.ExternalID))
+		if err != nil {
+			log.Logger.WithFields(logrus.Fields{
+				"status":      payload.Status,
+				"external_id": payload.ExternalID,
+			}).Errorf("uc.svc.ProcessPaymentFailed() got error: %v", err)
+
+			return err
+		}
 	case "PENDING":
 	default:
 		log.Logger.WithFields(logrus.Fields{

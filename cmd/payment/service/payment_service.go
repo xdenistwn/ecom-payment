@@ -22,6 +22,7 @@ const (
 
 type PaymentService interface {
 	ProcessPaymentSuccess(ctx context.Context, orderID int64) error
+	ProcessPaymentFailed(ctx context.Context, orderID int64) error
 	CheckPaymentAmountByOrderID(ctx context.Context, orderID int64) (float64, error)
 	SavePaymentAnomaly(ctx context.Context, param models.PaymentAnomaly) error
 	SavePaymentRequest(ctx context.Context, param models.PaymentRequests) error
@@ -92,6 +93,50 @@ func (s *paymentService) GetPaymentInfoByOrderID(ctx context.Context, orderID in
 	return paymentInfo, nil
 }
 
+func (s *paymentService) ProcessPaymentFailed(ctx context.Context, orderID int64) error {
+	// check payment info is failed already?
+	paymentInfo, err := s.database.GetPaymentInfoByOrderID(ctx, orderID)
+	if err != nil {
+		return err
+	}
+
+	if paymentInfo.Status == "FAILED" {
+		return nil
+	}
+
+	// public failed event payment status
+	err = retryPublishPayment(MaxTryPublishPayment, func() error {
+		auditLogParam := models.PaymentAuditLog{
+			OrderID:    orderID,
+			Event:      "PublishEventPaymentStatus",
+			Actor:      "payment_service",
+			CreateTime: time.Now(),
+		}
+		errLogAudit := s.database.InsertAuditLog(ctx, auditLogParam)
+		if errLogAudit != nil {
+			log.Logger.WithFields(logrus.Fields{
+				"order_id": orderID,
+				"event":    "PublishEventPaymentStatus",
+				"actor":    "payment_service",
+			}).Errorf("s.database.InsertAuditLog() got error: %v", errLogAudit)
+		}
+
+		return s.publisher.PublishEventPaymentStatus(ctx, orderID, "FAILED", "payment.failed")
+	})
+
+	// update status to DB
+	err = s.database.MarkFailed(ctx, orderID)
+	if err != nil {
+		log.Logger.WithFields(logrus.Fields{
+			"order_id": orderID,
+		}).Errorf("s.database.MarkFailed got error: %v", err)
+
+		return err
+	}
+
+	return nil
+}
+
 func (s *paymentService) ProcessPaymentSuccess(ctx context.Context, orderID int64) error {
 	// validate paid status
 	isAlreadyPaid, err := s.database.IsAlreadyPaid(ctx, orderID)
@@ -122,10 +167,12 @@ func (s *paymentService) ProcessPaymentSuccess(ctx context.Context, orderID int6
 		if errLogAudit != nil {
 			log.Logger.WithFields(logrus.Fields{
 				"order_id": orderID,
+				"event":    "PublishEventPaymentStatus",
+				"actor":    "payment_service",
 			}).Errorf("s.database.InsertAuditLog() got error: %v", errLogAudit)
 		}
 
-		return s.publisher.PublishPaymentSuccess(ctx, orderID)
+		return s.publisher.PublishEventPaymentStatus(ctx, orderID, "PAID", "payment.success")
 	})
 	if err != nil {
 		// store data to failed payment event
