@@ -34,6 +34,20 @@ func (m *MockPaymentEventPublisher) EXPECT() *MockPaymentEventPublisherMockRecor
 	return m.recorder
 }
 
+// PublishEventPaymentStatus mocks base method.
+func (m *MockPaymentEventPublisher) PublishEventPaymentStatus(ctx context.Context, orderID int64, status string, topic string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PublishEventPaymentStatus", ctx, orderID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PublishEventPaymentStatus indicates an expected call of PublishEventPaymentStatus.
+func (mr *MockPaymentEventPublisherMockRecorder) PublishEventPaymentStatus(ctx, orderID interface{}, status interface{}, topic interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishEventPaymentStatus", reflect.TypeOf((*MockPaymentEventPublisher)(nil).PublishEventPaymentStatus), ctx, orderID, status, topic)
+}
+
 // PublishPaymentSuccess mocks base method.
 func (m *MockPaymentEventPublisher) PublishPaymentSuccess(ctx context.Context, orderID int64) error {
 	m.ctrl.T.Helper()
@@ -46,4 +60,18 @@ func (m *MockPaymentEventPublisher) PublishPaymentSuccess(ctx context.Context, o
 func (mr *MockPaymentEventPublisherMockRecorder) PublishPaymentSuccess(ctx, orderID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishPaymentSuccess", reflect.TypeOf((*MockPaymentEventPublisher)(nil).PublishPaymentSuccess), ctx, orderID)
+}
+
+// PublishPaymentFailed mocks base method.
+func (m *MockPaymentEventPublisher) PublishPaymentFailed(ctx context.Context, orderID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PublishPaymentFailed", ctx, orderID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PublishPaymentFailed indicates an expected call of PublishPaymentFailed.
+func (mr *MockPaymentEventPublisherMockRecorder) PublishPaymentFailed(ctx, orderID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishPaymentFailed", reflect.TypeOf((*MockPaymentEventPublisher)(nil).PublishPaymentFailed), ctx, orderID)
 }

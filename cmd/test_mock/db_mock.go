@@ -180,6 +180,20 @@ func (mr *MockPaymentDatabaseMockRecorder) MarkPaid(ctx, orderID interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkPaid", reflect.TypeOf((*MockPaymentDatabase)(nil).MarkPaid), ctx, orderID)
 }
 
+// MarkPaid mocks base method.
+func (m *MockPaymentDatabase) MarkFailed(ctx context.Context, orderID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MarkFailed", ctx, orderID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MarkFailed indicates an expected call of MarkFailed.
+func (mr *MockPaymentDatabaseMockRecorder) MarkFailed(ctx, orderID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkFailed", reflect.TypeOf((*MockPaymentDatabase)(nil).MarkFailed), ctx, orderID)
+}
+
 // SaveFailedPublishEvent mocks base method.
 func (m *MockPaymentDatabase) SaveFailedPublishEvent(ctx context.Context, param models.FailedEvents) error {
 	m.ctrl.T.Helper()
